@@ -1,0 +1,8 @@
+# One audience per line. Format: Target audience | Business type | Location
+# Lines starting with # are ignored. Edit this file on GitHub any time.
+Nurses who want to start an assisted living facility | Assisted Living | Texas
+New home daycare owners who have already registered their business | Home Daycare | Georgia
+Group home owners who need referrals | Group Home | North Carolina
+Home care agency owners interested in government contracts | Home Care | United States
+People who want to start group homes | Group Home | Georgia
+Existing home care agency owners struggling to get referrals | Home Care | United States
