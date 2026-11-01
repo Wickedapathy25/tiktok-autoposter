@@ -102,9 +102,31 @@ def send_email(subject, body):
     msg["Subject"] = subject
     msg["From"] = user
     msg["To"] = to
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=60) as s:
-        s.login(user, pw)
-        s.send_message(msg)
+    errors = []
+    for attempt in range(3):
+        # try the secure port first, then the alternative port
+        for mode in ("ssl465", "starttls587"):
+            try:
+                if mode == "ssl465":
+                    s = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=60)
+                else:
+                    s = smtplib.SMTP("smtp.gmail.com", 587, timeout=60)
+                    s.ehlo()
+                    s.starttls()
+                    s.ehlo()
+                s.login(user, pw)
+                s.send_message(msg)
+                s.quit()
+                return
+            except smtplib.SMTPAuthenticationError as e:
+                raise RuntimeError(
+                    "Gmail refused the login. Check that GMAIL_ADDRESS is the full address "
+                    "(name@gmail.com) and GMAIL_APP_PASSWORD is the 16-letter app password, "
+                    f"not your normal password. Details: {e.smtp_code}")
+            except Exception as e:
+                errors.append(f"{mode}: {type(e).__name__}: {e}")
+        time.sleep(5)
+    raise RuntimeError("Could not send email after retries: " + " | ".join(errors[-2:]))
 
 
 def notify_error(title, err):
