@@ -95,38 +95,49 @@ def buffer(query):
 
 # ---------- Email ----------
 def send_email(subject, body):
+    to = env("REPORT_EMAIL", required=False) or env("GMAIL_ADDRESS", required=False)
+    resend_key = env("RESEND_API_KEY", required=False)
+
+    # Preferred: Resend (sends over the web, so GitHub's servers are not blocked)
+    if resend_key:
+        if not to:
+            raise RuntimeError("Set GMAIL_ADDRESS or REPORT_EMAIL to the email you signed up to Resend with.")
+        r = requests.post(
+            "https://api.resend.com/emails",
+            headers={"Authorization": f"Bearer {resend_key}", "Content-Type": "application/json",
+                     "User-Agent": "next-level-autoposter/1.0"},
+            json={"from": "Autoposter <onboarding@resend.dev>", "to": [to], "subject": subject, "text": body},
+            timeout=60)
+        if r.status_code in (200, 201):
+            return
+        raise RuntimeError(f"Resend refused the email: HTTP {r.status_code} {r.text[:300]}")
+
+    # Backup: Gmail
     user = env("GMAIL_ADDRESS")
     pw = env("GMAIL_APP_PASSWORD").replace(" ", "")
-    to = env("REPORT_EMAIL", required=False) or user
     msg = MIMEText(body, "plain", "utf-8")
     msg["Subject"] = subject
     msg["From"] = user
-    msg["To"] = to
+    msg["To"] = to or user
     errors = []
-    for attempt in range(3):
-        # try the secure port first, then the alternative port
-        for mode in ("ssl465", "starttls587"):
-            try:
-                if mode == "ssl465":
-                    s = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=60)
-                else:
-                    s = smtplib.SMTP("smtp.gmail.com", 587, timeout=60)
-                    s.ehlo()
-                    s.starttls()
-                    s.ehlo()
-                s.login(user, pw)
-                s.send_message(msg)
-                s.quit()
-                return
-            except smtplib.SMTPAuthenticationError as e:
-                raise RuntimeError(
-                    "Gmail refused the login. Check that GMAIL_ADDRESS is the full address "
-                    "(name@gmail.com) and GMAIL_APP_PASSWORD is the 16-letter app password, "
-                    f"not your normal password. Details: {e.smtp_code}")
-            except Exception as e:
-                errors.append(f"{mode}: {type(e).__name__}: {e}")
-        time.sleep(5)
-    raise RuntimeError("Could not send email after retries: " + " | ".join(errors[-2:]))
+    for mode in ("ssl465", "starttls587"):
+        try:
+            if mode == "ssl465":
+                s = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=60)
+            else:
+                s = smtplib.SMTP("smtp.gmail.com", 587, timeout=60)
+                s.ehlo()
+                s.starttls()
+                s.ehlo()
+            s.login(user, pw)
+            s.send_message(msg)
+            s.quit()
+            return
+        except smtplib.SMTPAuthenticationError as e:
+            raise RuntimeError(f"Gmail refused the login (code {e.smtp_code}). Check the app password.")
+        except Exception as e:
+            errors.append(f"{mode}: {type(e).__name__}: {e}")
+    raise RuntimeError("Could not send email through Gmail: " + " | ".join(errors))
 
 
 def notify_error(title, err):
