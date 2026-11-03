@@ -1,6 +1,7 @@
 """Step 1: write the post and build the image. Saves pending.json for publish.py."""
 import difflib, os, random, time
-from datetime import datetime, timezone
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import config as C
 import graphics
@@ -17,6 +18,34 @@ VISUALS = [
     "exterior of a modest residential street at golden hour", "close-up of hands organizing paperwork and folders",
     "calm professional workspace with a calendar and notes", "abstract navy and gold geometric background, no objects",
 ]
+
+NY = ZoneInfo("America/New_York")
+
+
+def now_ny():
+    return datetime.now(NY)
+
+
+def today_ny():
+    return now_ny().strftime("%Y-%m-%d")
+
+
+def current_slot():
+    # runs before 2 PM New York time count as the morning post, later runs as the evening post
+    return "morning" if now_ny().hour < 14 else "evening"
+
+
+def retry(fn, *args, tries=3):
+    last = None
+    for i in range(tries):
+        try:
+            return fn(*args)
+        except Exception as e:
+            last = e
+            print(f"Attempt {i + 1} failed: {e}")
+            time.sleep(10)
+    raise last
+
 
 BRIEF = """You write TikTok photo posts for Next Level Care Biz Group, a U.S. care-business consulting firm
 (tagline: Strategic Growth for Care Businesses). Services: startup planning, licensing and compliance preparation,
@@ -83,9 +112,21 @@ Return ONLY JSON: {{"ok": true or false, "reason": "short reason"}}"""
     return gemini_json(prompt, temperature=0.1)
 
 
-def too_similar(headline, history):
-    for h in history[-60:]:
-        if difflib.SequenceMatcher(None, headline.lower(), h.get("headline", "").lower()).ratio() > 0.75:
+def known_headlines(history):
+    names = [h.get("headline", "") for h in history[-300:]]
+    try:
+        for f in os.listdir("posts"):
+            if f.endswith(".jpg") and len(f) > 11:
+                names.append(f[11:-4].replace("-", " "))   # drop the date, keep the headline words
+    except FileNotFoundError:
+        pass
+    return [n for n in names if n]
+
+
+def too_similar(headline, known):
+    s = slugify(headline)[:40]
+    for k in known:
+        if difflib.SequenceMatcher(None, s, slugify(k)[:40]).ratio() > 0.8:
             return True
     return False
 
@@ -103,25 +144,26 @@ def main():
         print("A post is already waiting to publish; publish.py will handle it.")
         return
     history = load_json(HISTORY, [])
-    done_today = [h for h in history if h.get("date") == today_utc() and h.get("kind") == "image"]
-    if len(done_today) >= C.IMAGE_POSTS_PER_DAY:
-        print("Today's image post is already done. Nothing to do.")
+    today, slot = today_ny(), current_slot()
+    if any(h.get("date") == today and h.get("kind") == "image" and h.get("slot") == slot for h in history):
+        print(f"The {slot} post for {today} is already done. Nothing to do.")
         return
 
     audiences = read_audiences()
-    recent = [h.get("headline", "") for h in history[-25:]]
+    known = known_headlines(history)
+    recent = known[-30:]
     post, why = None, ""
     for attempt in range(4):
         a = pick_audience(history, audiences)
-        p = write_post(a, recent, random.choice(STYLES))
+        p = retry(write_post, a, recent, random.choice(STYLES))
         need = ["topic", "headline", "subline", "caption", "hashtags", "cta_keyword", "image_prompt"]
         if any(k not in p for k in need):
             why = "missing fields"
             continue
-        if too_similar(p["headline"], history):
+        if too_similar(p["headline"], known):
             why = "too similar to a recent headline"
             continue
-        r = review_post(p)
+        r = retry(review_post, p)
         if not r.get("ok"):
             why = f"review rejected: {r.get('reason')}"
             print("Rejected draft:", why)
@@ -131,14 +173,14 @@ def main():
     if not post:
         raise RuntimeError(f"No acceptable post after 4 tries ({why}). Skipped today.")
 
-    slug = f"{today_utc()}-{slugify(post['headline'])}"
+    slug = f"{today}-{slugify(post['headline'])}"
     bg, out = f"/tmp/{slug}-bg.jpg", f"posts/{slug}.jpg"
     prompt = f"{post['image_prompt']}. Style: {random.choice(VISUALS)}. High quality, realistic, no text, no letters, no watermark, no logos."
-    cloudflare_image(prompt, bg)
+    retry(cloudflare_image, prompt, bg)
     graphics.compose(bg, post["headline"], post["subline"], post["cta_keyword"], out)
     tags = " ".join(h if h.startswith("#") else "#" + h for h in post["hashtags"][:4])
     save_json(PENDING, {
-        "kind": "image", "date": today_utc(), "audience": a["audience"], "topic": post["topic"],
+        "kind": "image", "date": today, "slot": slot, "audience": a["audience"], "topic": post["topic"],
         "headline": post["headline"], "caption": post["caption"].replace("\n", " ").strip(),
         "hashtags": tags, "image_path": out,
     })
