@@ -1,8 +1,10 @@
-name: Daily TikTok image post
+name: Daily TikTok image posts
 on:
   schedule:
-    - cron: "17 13 * * *"   # main run (UTC)
-    - cron: "47 16 * * *"   # backup run in case the first one is skipped
+    - cron: "17 13 * * *"   # morning post, about 8:17 AM New York (winter time)
+    - cron: "17 15 * * *"   # morning backup, in case the first run is skipped
+    - cron: "17 22 * * *"   # evening post, about 5:17 PM New York
+    - cron: "17 0 * * *"    # evening backup (7:17 PM New York)
   workflow_dispatch:
 permissions:
   contents: write
@@ -40,6 +42,7 @@ jobs:
       - name: Send to Buffer and email report
         run: python publish.py
       - name: Save history
+        if: always()
         run: |
           git add -A
           git diff --cached --quiet || (git commit -m "Update history" && git pull --rebase && git push)
