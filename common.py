@@ -38,28 +38,63 @@ def slugify(text, n=40):
 
 
 # ---------- Gemini (writing) ----------
+def _discover_models(key):
+    """Ask Google which Flash models exist right now (model names change over time)."""
+    try:
+        r = requests.get("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",
+                         headers={"x-goog-api-key": key}, timeout=30)
+        names = []
+        for m in r.json().get("models", []):
+            n = m.get("name", "").replace("models/", "")
+            if "flash" not in n or "generateContent" not in m.get("supportedGenerationMethods", []):
+                continue
+            if any(x in n for x in ("image", "tts", "audio", "live", "native", "embedding", "robotics", "computer")):
+                continue
+            names.append(n)
+        # newest first, "lite" versions last
+        return sorted(names, key=lambda n: ("lite" in n, [-ord(c) for c in n]))[:6]
+    except Exception as e:
+        print(f"  (could not list Gemini models: {e})")
+        return []
+
+
 def gemini_json(prompt, temperature=0.9):
     key = env("GEMINI_API_KEY")
-    models = [m for m in [os.environ.get("GEMINI_MODEL", "").strip(),
-                          "gemini-flash-latest", "gemini-2.5-flash", "gemini-2.0-flash"] if m]
-    last = None
-    for model in models:
+    candidates = [os.environ.get("GEMINI_MODEL", "").strip(), "gemini-3.0-flash", "gemini-flash-latest"]
+    tried, last = set(), None
+    discovered = False
+    queue = [m for m in candidates if m]
+    while queue:
+        model = queue.pop(0)
+        if model in tried:
+            continue
+        tried.add(model)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
         body = {
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {"temperature": temperature, "responseMimeType": "application/json"},
         }
-        r = requests.post(url, headers={"x-goog-api-key": key, "Content-Type": "application/json"},
-                          json=body, timeout=90)
-        if r.status_code == 200:
-            try:
-                text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
-                text = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.M).strip()
-                return json.loads(text)
-            except Exception as e:  # bad JSON: try again with next model
-                last = f"{model}: could not read answer ({e})"
-                continue
-        last = f"{model}: HTTP {r.status_code} {r.text[:200]}"
+        try:
+            r = requests.post(url, headers={"x-goog-api-key": key, "Content-Type": "application/json"},
+                              json=body, timeout=60)
+        except Exception as e:
+            last = f"{model}: {type(e).__name__}"
+            print(f"  Gemini model {model} failed: {last}")
+        else:
+            if r.status_code == 200:
+                try:
+                    text = r.json()["candidates"][0]["content"]["parts"][0]["text"]
+                    text = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.M).strip()
+                    return json.loads(text)
+                except Exception as e:
+                    last = f"{model}: could not read answer ({e})"
+            else:
+                last = f"{model}: HTTP {r.status_code} {r.text[:120]}"
+            print(f"  Gemini model {model} failed: {last}")
+        if not queue and not discovered:
+            discovered = True
+            queue = _discover_models(key)
+            print(f"  Trying models found on your account: {queue}")
     raise RuntimeError("Gemini failed. " + str(last))
 
 
