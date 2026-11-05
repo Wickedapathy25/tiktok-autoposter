@@ -4,5 +4,11 @@
     "palette": "navy_gold",
     "logo": "TL",
     "serif": false
+  },
+  {
+    "layout": "split_left",
+    "palette": "teal_sand",
+    "logo": "BR",
+    "serif": false
   }
 ]
