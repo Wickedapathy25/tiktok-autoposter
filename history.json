@@ -42,5 +42,20 @@
     "buffer_post_id": "6aeb958e565fb498f43175b9",
     "status": "queued in Buffer",
     "created_utc": "2026-11-04 20:29:02"
+  },
+  {
+    "kind": "image",
+    "date": "2026-11-05",
+    "slot": "morning",
+    "audience": "New home daycare owners who have already registered their business",
+    "topic": "Pre-Inspection Home Readiness Checklist",
+    "headline": "Your Pre-Licensing Home Readiness Checklist in Georgia",
+    "caption": "Registered your home daycare entity in Georgia? Before scheduling site visits, verify designated child spaces, household member screening prep, outdoor perimeter safety, and emergency exit routes with state guidelines. Comment CHECKLIST to review your licensing readiness strategy.",
+    "hashtags": "#HomeDaycare #GeorgiaChildcare #DaycareStartup #ChildcareLicensing",
+    "image_path": "posts/2026-11-05-your-pre-licensing-home-readiness-checkl.jpg",
+    "image_url": "https://raw.githubusercontent.com/Wickedapathy25/tiktok-autoposter/main/posts/2026-11-05-your-pre-licensing-home-readiness-checkl.jpg",
+    "buffer_post_id": "6aec27d43ddb81d2210d2351",
+    "status": "queued in Buffer",
+    "created_utc": "2026-11-05 06:53:08"
   }
 ]
