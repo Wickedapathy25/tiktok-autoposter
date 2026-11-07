@@ -10,5 +10,11 @@
     "palette": "teal_sand",
     "logo": "BR",
     "serif": false
+  },
+  {
+    "layout": "frame",
+    "palette": "cream_navy",
+    "logo": "TC",
+    "serif": true
   }
 ]
