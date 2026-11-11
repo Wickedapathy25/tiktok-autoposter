@@ -16,5 +16,11 @@
     "palette": "cream_navy",
     "logo": "TC",
     "serif": true
+  },
+  {
+    "layout": "top_fade",
+    "palette": "navy_gold",
+    "logo": "BR",
+    "serif": false
   }
 ]
