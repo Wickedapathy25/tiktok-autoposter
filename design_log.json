@@ -22,5 +22,11 @@
     "palette": "navy_gold",
     "logo": "BR",
     "serif": false
+  },
+  {
+    "layout": "split_left",
+    "palette": "teal_sand",
+    "logo": "TR",
+    "serif": false
   }
 ]
