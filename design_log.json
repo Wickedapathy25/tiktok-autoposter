@@ -28,5 +28,11 @@
     "palette": "teal_sand",
     "logo": "TR",
     "serif": false
+  },
+  {
+    "layout": "bottom_fade",
+    "palette": "navy_gold",
+    "logo": "TC",
+    "serif": true
   }
 ]
