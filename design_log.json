@@ -34,5 +34,11 @@
     "palette": "navy_gold",
     "logo": "TC",
     "serif": true
+  },
+  {
+    "layout": "band_bottom",
+    "palette": "burgundy_gold",
+    "logo": "TR",
+    "serif": true
   }
 ]
