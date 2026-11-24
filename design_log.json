@@ -40,5 +40,11 @@
     "palette": "burgundy_gold",
     "logo": "TR",
     "serif": true
+  },
+  {
+    "layout": "split_left",
+    "palette": "cream_navy",
+    "logo": "BR",
+    "serif": false
   }
 ]
