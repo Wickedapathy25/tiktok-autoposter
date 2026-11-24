@@ -132,5 +132,20 @@
     "buffer_post_id": "6b0250b7cc364169c11f3f9e",
     "status": "queued in Buffer",
     "created_utc": "2026-11-22 02:17:27"
+  },
+  {
+    "kind": "image",
+    "date": "2026-11-23",
+    "slot": "evening",
+    "audience": "Group home owners who need referrals",
+    "topic": "Licensing vs Network Contracting",
+    "headline": "Licensing Approval Does Not Guarantee Network Placements",
+    "caption": "Getting licensed is only step one. In North Carolina, receiving placements usually requires separate provider network contracting with regional management entities. If your beds are open, check your network status. Comment NETWORK and tell me your county.",
+    "hashtags": "#NorthCarolinaGroupHome #CareBusiness #ResidentialCare #GroupHomeReferrals",
+    "image_path": "posts/2026-11-23-licensing-approval-does-not-guarantee-ne.jpg",
+    "image_url": "https://raw.githubusercontent.com/Wickedapathy25/tiktok-autoposter/main/posts/2026-11-23-licensing-approval-does-not-guarantee-ne.jpg",
+    "buffer_post_id": "6b04e1829a4bd32ca3e0ad38",
+    "status": "queued in Buffer",
+    "created_utc": "2026-11-24 00:59:46"
   }
 ]
