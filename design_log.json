@@ -46,5 +46,11 @@
     "palette": "cream_navy",
     "logo": "BR",
     "serif": false
+  },
+  {
+    "layout": "center_card",
+    "palette": "navy_gold",
+    "logo": "TC",
+    "serif": false
   }
 ]
