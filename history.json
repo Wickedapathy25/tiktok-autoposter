@@ -147,5 +147,20 @@
     "buffer_post_id": "6b04e1829a4bd32ca3e0ad38",
     "status": "queued in Buffer",
     "created_utc": "2026-11-24 00:59:46"
+  },
+  {
+    "kind": "image",
+    "date": "2026-11-25",
+    "slot": "morning",
+    "audience": "People who want to start group homes",
+    "topic": "Lease Licensing Contingencies",
+    "headline": "Never Sign That Lease Without a Care Licensing Contingency",
+    "caption": "If your Georgia group home application faces delays or site revisions, a standard lease locks you into monthly overhead without operating revenue. Always negotiate an exit clause tied directly to state licensing decisions before you commit. Comment LEASE and tell me your target Georgia county.",
+    "hashtags": "#GroupHomeStartup #GeorgiaGroupHomes #CareBusiness #HealthcareEntrepreneur",
+    "image_path": "posts/2026-11-25-never-sign-that-lease-without-a-care-lic.jpg",
+    "image_url": "https://raw.githubusercontent.com/Wickedapathy25/tiktok-autoposter/main/posts/2026-11-25-never-sign-that-lease-without-a-care-lic.jpg",
+    "buffer_post_id": "6b06a063c68d7845a49738db",
+    "status": "queued in Buffer",
+    "created_utc": "2026-11-25 08:46:27"
   }
 ]
