@@ -52,5 +52,11 @@
     "palette": "navy_gold",
     "logo": "TC",
     "serif": false
+  },
+  {
+    "layout": "top_fade",
+    "palette": "cream_navy",
+    "logo": "BL",
+    "serif": false
   }
 ]
